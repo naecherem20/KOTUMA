@@ -36,7 +36,7 @@ The Legal Aid Web App is a platform designed to connect users with legal profess
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/naecherem20/KOTUMA
+git clone https://github.com/naecherem20/KOTUMA.git
 cd KOTUMA
 
 ## Create and activate virtual environment**
