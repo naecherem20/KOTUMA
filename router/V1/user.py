@@ -23,14 +23,6 @@ def sign_up(user: User, session: Session = Depends(get_session)):
         password=hashed_password
     )
     
-
-from schema.user import User_create
-
-
-user_router=APIRouter()
-@user_router.post("/", response_model=User_create, status_code=status.HTTP_201_CREATED)
-def sign_up(user: User, session: Session = Depends(get_session)):
-  
     session.add(user)
     session.commit()
     session.refresh(user)

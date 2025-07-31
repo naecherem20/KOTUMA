@@ -5,7 +5,6 @@ from pydantic import  EmailStr
 class User_create(BaseModel):
     username: str
     email: EmailStr
-
     password: str
 
 class User_read(BaseModel):
@@ -16,5 +15,3 @@ class User_read(BaseModel):
     class Config:    
         orm_mode = True
         
-    password: str
-
