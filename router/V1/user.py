@@ -10,7 +10,7 @@ user_router=APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @user_router.post("/", response_model=User_create, status_code=status.HTTP_201_CREATED)
-def sign_up(user: User, session: Session = Depends(get_session)):
+def sign_up(user: User_create, session: Session = Depends(get_session)):
     existing_user = session.exec(select(User).where(User.email == user.email)).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
@@ -23,10 +23,10 @@ def sign_up(user: User, session: Session = Depends(get_session)):
         password=hashed_password
     )
     
-    session.add(user)
+    session.add(new_user)
     session.commit()
-    session.refresh(user)
-    return user
+    session.refresh(new_user)
+    return new_user
 
 @user_router.get("/")
 def all_users(session: Session = Depends(get_session)):
