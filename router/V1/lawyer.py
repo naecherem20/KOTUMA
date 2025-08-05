@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlmodel import Session, select
-from models.lawyer_models import Lawyer, LawyerCreate, LawyerRead
+from sqlalchemy import func
+from models.lawyer_models import Lawyer, LawyerCreate, LawyerRead,LawyerBase
 from database.connection import get_session
 from passlib.hash import bcrypt
 from typing import List
 
 router = APIRouter(prefix="/lawyers", tags=["Lawyers"])
 
-@router.post("/", response_model=LawyerRead)
+@router.post("/", response_model=LawyerRead,status_code=status.HTTP_201_CREATED)
 def register_lawyer(lawyer_data: LawyerCreate, session: Session = Depends(get_session)):
     if lawyer_data.password != lawyer_data.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
@@ -27,4 +28,11 @@ def register_lawyer(lawyer_data: LawyerCreate, session: Session = Depends(get_se
     session.commit()
     session.refresh(new_lawyer)
     return new_lawyer
-router = APIRouter()
+
+@router.get("/{full_name}", response_model=LawyerBase)
+def find_lawyers(full_name:str, session: Session = Depends(get_session)):
+    existing_lawyer = session.exec(select(Lawyer).where(func.upper(Lawyer.full_name) == full_name.upper())).first()
+    if not existing_lawyer:
+        raise HTTPException(status_code=404, detail="Lawyer not found!!")
+    return existing_lawyer
+
