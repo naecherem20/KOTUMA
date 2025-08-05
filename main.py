@@ -8,7 +8,7 @@ from router.V1.lawyer import router as lawyer_router
 
 app=FastAPI()
 app.include_router(user_router)
-app.include_router(lawyer_router)
+app.include_router(lawyer_router, prefix="/api/v1/lawyers", tags=["Lawyers"])
 
 @app.on_event("startup")
 def on_startup():

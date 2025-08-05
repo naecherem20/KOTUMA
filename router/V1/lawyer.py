@@ -27,4 +27,4 @@ def register_lawyer(lawyer_data: LawyerCreate, session: Session = Depends(get_se
     session.commit()
     session.refresh(new_lawyer)
     return new_lawyer
-router = APIRouter()
+
