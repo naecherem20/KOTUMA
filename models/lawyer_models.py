@@ -1,14 +1,18 @@
 from sqlmodel import SQLModel, Field
-from typing import Optional
 from pydantic import EmailStr
 import uuid
 
 class LawyerBase(SQLModel):
     full_name: str
     email: EmailStr
-    phone_number: int = Field(..., ge=1000000000, le=9999999999)  # Nigerian 10-digit number
+    phone_number: int = Field(..., ge=1000000000, le=9999999999)
     location: str
-    year_of_experience: int = Field(..., ge=0)  # must be 0 or more
+    year_of_experience: int = Field(..., ge=0)
+
+class Lawyer(LawyerBase, table=True):
+    __tablename__ = "lawyer"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    hashed_password: str
 
 class LawyerCreate(LawyerBase):
     password: str
@@ -16,7 +20,5 @@ class LawyerCreate(LawyerBase):
 
 class LawyerRead(LawyerBase):
     id: uuid.UUID
-
-class Lawyer(LawyerBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    hashed_password: str
+    # Pydantic v2: replaces orm_mode=True
+    model_config = {"from_attributes": True}

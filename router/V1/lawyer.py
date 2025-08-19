@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
+
 from database.connection import get_session
 from schema.lawyer_schemas import LawyerCreate, LawyerRead
 from services.lawyer_service import register_lawyer_service
