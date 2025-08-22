@@ -4,6 +4,10 @@ from models.user_models import User
 from database.connection import  get_session
 from schema.user import User_create, User_show
 from passlib.context import CryptContext
+from auth import user_auth
+from typing import Annotated
+
+
 
 user_router=APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -38,3 +42,6 @@ def sign_up(user: User_create, session: Session = Depends(get_session)):
 def all_users(session: Session = Depends(get_session)):
     users=session.exec(select(User)).all()
     return {"users":users}
+
+
+

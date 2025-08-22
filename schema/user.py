@@ -10,7 +10,7 @@ class User_show(BaseModel):
     email: EmailStr
 
 class User_create(User_show):
-    phone: constr(min_length=11, max_length=11, pattern=r"^0{11}$")
+    phone: constr(pattern=r'^\+234\s\d{3}\s\d{3}\s\d{4}$',max_length=17)
     city: str
     state:str
     situation_description:Optional[str]=Field(default=None)
