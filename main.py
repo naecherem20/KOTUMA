@@ -6,11 +6,14 @@ from database.connection import engine, get_session
 from router.V1.user import user_router
 from router.V1.lawyer import router as lawyer_router
 from auth.user_auth import auth_router   
+from router.V1.lawyer_auth import router as lawyer_auth_router
+
 
 app=FastAPI()
 app.include_router(user_router)
 app.include_router(lawyer_router)
 app.include_router(auth_router)
+app.include_router(lawyer_auth_router)
 
 @app.on_event("startup")
 def on_startup():

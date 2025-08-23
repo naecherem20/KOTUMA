@@ -13,6 +13,9 @@ class LawyerBase(SQLModel):
     full_name: str
     email: str
     phone_number: str
+    phone_number: int = Field(..., ge=1000000000, le=9999999999)
+    location: str
+    year_of_experience: int = Field(..., ge=0)
 
 class LawyerCreate(LawyerBase):
     password: str
