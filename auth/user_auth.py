@@ -39,8 +39,6 @@ def create_access_token(data: dict, expires_delta: int = None):
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-
-
 async def decode_token(token: str = Depends(oauth2_scheme),    session: Session = Depends(get_session)):
     cred_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
