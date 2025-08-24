@@ -1,36 +1,21 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlmodel import Session, select
 from sqlalchemy import func
+from fastapi import APIRouter, Depends, status
 from passlib.hash import bcrypt
 from typing import List
 from models.lawyer_models import Lawyer, LawyerCreate, LawyerRead,LawyerBase,Lawyer_appointment
 from database.connection import get_session
 from schema.lawyer import Lawyer_calender
 from models.user_models import User
+from schema.lawyer_schemas import LawyerCreate, LawyerRead
+from services.lawyer_service import register_lawyer_service
 
+router = APIRouter(prefix="/v1/lawyers", tags=["Lawyers"])
 
-router = APIRouter(prefix="/lawyers", tags=["Lawyers"])
-
-@router.post("/", response_model=LawyerRead,status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=LawyerRead, status_code=status.HTTP_201_CREATED)
 def register_lawyer(lawyer_data: LawyerCreate, session: Session = Depends(get_session)):
-    if lawyer_data.password != lawyer_data.confirm_password:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
-
-    existing_lawyer = session.exec(select(Lawyer).where(Lawyer.email == lawyer_data.email)).first()
-    if existing_lawyer:
-        raise HTTPException(status_code=400, detail="Email already exists")
-
-    hashed_pw = bcrypt.hash(lawyer_data.password)
-    new_lawyer = Lawyer(
-        full_name=lawyer_data.full_name,
-        email=lawyer_data.email,
-        phone_number=lawyer_data.phone_number,
-        hashed_password=hashed_pw
-    )
-    session.add(new_lawyer)
-    session.commit()
-    session.refresh(new_lawyer)
-    return new_lawyer
+    return register_lawyer_service(lawyer_data, session)
 
 @router.get("/{full_name}", response_model=LawyerBase)
 def find_lawyers(full_name:str, session: Session = Depends(get_session)):
@@ -47,16 +32,12 @@ def lawyer_calender(appointment:Lawyer_calender,session: Session = Depends(get_s
         raise HTTPException(status_code=404, detail="Lawyer not found")
     if not user:
         raise HTTPException(status_code=404, detail="This user does not exist")
-
-
-
     booking = Lawyer_appointment(
         lawyer_id=lawyer.id,
         user_id=user.id,
         booking_date=appointment.booking_date,
         booking_time=appointment.booking_time,
         status="pending"
-
     )
     session.add(booking)
     session.commit()
