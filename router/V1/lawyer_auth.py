@@ -2,7 +2,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
-from core.security import create_access_token, verify_password, get_current_lawyer
+from core.lawyer_conf import create_access_token, verify_password, get_current_lawyer
 from database.connection import get_session
 from models.lawyer_models import Lawyer
 from schema.auth_schemas import Token,TokenData

@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from core.security import get_password_hash
+from core.lawyer_conf import get_password_hash
 from models.lawyer_models import Lawyer
 from schema.lawyer_schemas import LawyerCreate
 
