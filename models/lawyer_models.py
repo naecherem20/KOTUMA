@@ -17,12 +17,6 @@ class LawyerBase(SQLModel):
     location: str
     year_of_experience: int = Field(..., ge=0)
     
-
-class Lawyer(LawyerBase, table=True):
-    __tablename__ = "lawyer"
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    hashed_password: str
-
 class LawyerCreate(LawyerBase):
     password: str
     confirm_password: str
@@ -31,11 +25,11 @@ class LawyerRead(LawyerBase):
     id: uuid.UUID
 
 class Lawyer(LawyerBase, table=True):
+    __tablename__ = "lawyer"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
 
     appointments: List["Lawyer_appointment"] = Relationship(back_populates="lawyer")
-
 
 
 class Lawyer_appointment(SQLModel,table=True):
