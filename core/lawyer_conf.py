@@ -1,46 +1,65 @@
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import APIRouter, HTTPException, Depends, status
-from sqlmodel import Session , select
+import os
+import uuid 
+from datetime import datetime, timedelta, timezone
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
-from pydantic import BaseModel
-from models.user_models import User
-from jose import JWTError,jwt
+from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlmodel import Session, select
 from database.connection import get_session
-from core.config import settings
-from datetime import datetime,timedelta
-from schema.auth_schemas import Token,TokenData
+from models.lawyer_models import Lawyer
+from schema.auth_schemas import TokenData
 
+# ENV
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
+# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth")
 
+# OAuth2 bearer (must match the login endpoint below)
+oauth2_scheme_lawyer = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/lawyer/login", scheme_name="LawyerAuth")
 
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password: str):
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
+def hash_password(password: str):
+    return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: int = None):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=expires_delta or settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"iat": now, "exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-async def get_current_lawyer(token: str = Depends(oauth2_scheme),    session: Session = Depends(get_session)):
+async def get_current_lawyer(
+    token: Annotated[str, Depends(oauth2_scheme_lawyer)],
+    session: Session = Depends(get_session),
+) -> Lawyer:
     cred_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or expired token",
+        detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         sub = payload.get("sub")
-        if sub is None:
+        role=payload.get("role")
+        if sub is None or role != "lawyer":   # enforce role here
             raise cred_exc
-        return TokenData(sub=sub)
-    except JWTError:
+        token_data=TokenData(sub=sub,role=role)
+    except (JWTError, ValueError):
         raise cred_exc
+
+    lawyer_id = uuid.UUID(sub)
+    lawyer = session.exec(select(Lawyer).where(Lawyer.id == lawyer_id)).first()
+    if not lawyer:
+        raise cred_exc
+    return lawyer

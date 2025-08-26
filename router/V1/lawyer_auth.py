@@ -2,6 +2,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
+from typing import Annotated
 from core.lawyer_conf import create_access_token, verify_password, get_current_lawyer
 from database.connection import get_session
 from models.lawyer_models import Lawyer
@@ -24,9 +25,10 @@ def login_lawyer(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    token = create_access_token(data={"sub": str(lawyer.id)}, expires_delta=timedelta(minutes=60))
+    token = create_access_token(data={"sub": str(lawyer.id),"role":"lawyer"}, expires_delta=timedelta(minutes=60))
     return {"access_token": token, "token_type": "bearer"}
 
-@router.get("/lawyer/me", response_model=LawyerRead)
-def read_current_lawyer(current_lawyer: Lawyer = Depends(get_current_lawyer)):
-    return current_lawyer
+@router.get("/lawyer/me")
+def read_current_lawyer(current_lawyer: Annotated[Lawyer, Depends(get_current_lawyer)]):
+   
+    return {"id": current_lawyer.id, "username": current_lawyer.email, "message":"you've been logged in!!"}

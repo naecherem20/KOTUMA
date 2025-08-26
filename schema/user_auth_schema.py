@@ -8,5 +8,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     full_name: str | None = None  # user id
+    role: str | None = None
 
 
