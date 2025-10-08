@@ -9,10 +9,10 @@ from typing import Annotated
 
 
 
-user_router=APIRouter()
+user_router=APIRouter(prefix="/v1/users")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@user_router.post("/", response_model=User_show, status_code=status.HTTP_201_CREATED)
+@user_router.post("/signup", response_model=User_show, status_code=status.HTTP_201_CREATED)
 def sign_up(user: User_create, session: Session = Depends(get_session)):
     existing_user = session.exec(select(User).where(User.email == user.email)).first()
     if existing_user:
@@ -38,7 +38,7 @@ def sign_up(user: User_create, session: Session = Depends(get_session)):
     session.refresh(new_user)
     return new_user
 
-@user_router.get("/")
+@user_router.get("/all")
 def all_users(session: Session = Depends(get_session)):
     users=session.exec(select(User)).all()
     return {"users":users}

@@ -16,6 +16,8 @@ class LawyerBase(SQLModel):
     phone_number: int = Field(..., ge=1000000000, le=9999999999)
     location: str
     year_of_experience: int = Field(..., ge=0)
+    google_access_token:str
+    google_refresh_token:str
     
 class LawyerCreate(LawyerBase):
     password: str

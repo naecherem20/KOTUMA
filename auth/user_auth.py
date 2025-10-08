@@ -58,7 +58,7 @@ async def decode_token(token: Annotated[str,  Depends(oauth2_scheme_user)],    s
         
 @auth_router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.full_name == form_data.username)).first()
+    user = session.exec(select(User).where(User.email == form_data.username)).first()
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
@@ -67,5 +67,5 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = D
 
 @auth_router.get("/me")
 def get_me(current_user: Annotated[User, Depends(decode_token)]):
-    return {"id": current_user.id, "username": current_user.full_name,"message":"you've been logged in!!"}
+    return {"id": current_user.id, "username": current_user.email,"message":"you've been logged in!!"}
     
